@@ -30,20 +30,22 @@ while dq:
         if inDegree[next[1]] == 0:
             dq.append(next[1])
 
-visited = [False] * (m+1)
+visited = [False] * (n+1)
 list = []
 dq.append(end)
 cnt = 0
 while dq:
     now = dq.popleft()
+
     for prev in range(1, n + 1):
         for road_id, next_city, travel_time in A[prev]:
-            if next_city == now and time[now] == time[prev] + travel_time and not visited[road_id]:
-                list.append(road_id)
+            if next_city == now and time[now] == time[prev] + travel_time:
                 cnt += 1
-                visited[road_id] = True
-                dq.append(prev)
-
+                if not visited[prev]:
+                    visited[prev] = True
+                    dq.append(prev)
+for i in range(len(list)):
+    print(list[i])
 
 print(time[end])
 print(cnt)
