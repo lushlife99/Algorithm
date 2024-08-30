@@ -1,30 +1,26 @@
 import sys
 input = sys.stdin.readline
 n = 9
-arr=[list(map(int, input().split())) for _ in range(9)]
+arr=[[0] * n for _ in range(n)]
 zero = []
 
-def checkHeight(n,x):
-    for idx in range(9):
-        if arr[idx][n]==x:
-            return False
-    return True
+def is_valid(row, col, num):
 
-def checkWidth(n,x):
-    for idx in range(9):
-        if arr[n][idx]==x:
-            return False
-    return True
+    if num in arr[row]:
+        return False
 
-def checkBox(n,m,k):
-    x = n//3*3
-    y = m//3*3
-    for i in range(3):
-        for j in range(3):
-            if arr[x+i][y+j] == k:
+    for r in range(n):
+        if arr[r][col] == num:
+            return False
+
+    start_row = (row // 3) * 3
+    start_col = (col // 3) * 3
+    for i in range(start_row, start_row + 3):
+        for j in range(start_col, start_col + 3):
+            if arr[i][j] == num:
                 return False
-    return True
 
+    return True
 def dfs(cnt):
     if len(zero) == cnt:
         for num in arr:
@@ -34,16 +30,16 @@ def dfs(cnt):
     x = zero[cnt][0]
     y = zero[cnt][1]
     for num in range(1, n + 1):
-        if checkHeight(y, num) == True and checkWidth(x, num) == True and checkBox(x, y, num) == True:
+        if is_valid(x, y, num):
             arr[x][y] = num
             dfs(cnt + 1)
             arr[x][y] = 0
 
-
-
 for i in range(n):
-    for j in range(n):
-        if arr[i][j] == 0:
+    nums = list(map(int, input().split()))
+    arr[i] = nums
+    for j in range(len(nums)):
+        if nums[j] == 0:
             zero.append([i, j])
 
 dfs(0)
