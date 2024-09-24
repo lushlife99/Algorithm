@@ -1,10 +1,10 @@
-import sys
+import sys, math
 input = sys.stdin.readline
 
 N = int(input())
 arr = sorted(list(map(int, input().split())))
 
-if arr[0] < 0 and arr[N-1] > 0:
+if arr[0] < 0 < arr[N - 1]:
     pos_idx = sys.maxsize
     for i in range(N):
         if arr[i] > 0:
@@ -12,7 +12,6 @@ if arr[0] < 0 and arr[N-1] > 0:
             break
 
     answer, min_sum = (arr[0], arr[N-1]), abs(arr[0] + arr[N-1])
-
     for i in range(0, pos_idx):
         left, right = pos_idx, N-1
 
@@ -29,18 +28,19 @@ if arr[0] < 0 and arr[N-1] > 0:
             else:
                 right = mid - 1
 
-    if pos_idx + 1 < N:
-        if abs(arr[pos_idx] + arr[pos_idx + 1]) < min_sum:
-            answer = arr[pos_idx], arr[pos_idx + 1]
+    if pos_idx+1 < N:
+        if abs(arr[pos_idx] + arr[pos_idx+1]) < min_sum:
+            print(arr[pos_idx], arr[pos_idx + 1])
+            exit()
 
-    if pos_idx - 2 >= 0:
-        if abs(arr[pos_idx - 2] + arr[pos_idx - 1]) < min_sum:
-            answer = arr[pos_idx - 2], arr[pos_idx - 1]
+    if pos_idx-2 >= 0:
+        if abs(arr[pos_idx-2] + arr[pos_idx-1]) < min_sum:
+            print(arr[pos_idx-2], arr[pos_idx-1])
+            exit()
 
     print(answer[0], answer[1])
 
-elif arr[0] > 0:
+elif math.copysign(1, arr[0]) == 1.0:
     print(arr[0], arr[1])
 
-else:
-    print(arr[N-2], arr[N-1])
+else : print(arr[N-2], arr[N-1])
