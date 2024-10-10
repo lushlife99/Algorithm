@@ -1,59 +1,34 @@
 import sys
-from collections import deque
-input = sys.stdin.readline
 
-fees = []
-n,start,end, d = map(int, input().split())
-for i in range(d):
-    s,e,w = map(int, input().split())
-    fees.append((s,e,w))
-costs = list(map(int, input().split()))
-edges = []
-result = [-1 * sys.maxsize] * n
-result[start] = costs[start]
+N, S, E, M = map(int, input().split())
+edges = [list(map(int, input().split())) for _ in range(M)]
+moneys = list(map(int, input().split()))
+INF = sys.maxsize
+distance = [-INF] * N
 
-for i in fees:
-    s,e,w = i
-    w = costs[e] - w
-    edges.append((s,e,w))
+def bellman_ford(start):
 
-for _ in range(n-1):
-    for i in edges:
-        s,e,w = i
-        if result[s] != -1*sys.maxsize and result[e] < result[s] + w:
-            result[e]=result[s] + w
+    distance[start] = moneys[start]
 
+    for i in range(N*2 + M):
+        for j in range(M):
+            start, end, cost = edges[j]
 
-def bfs(start, end):
-    q = deque()
-    q.append(start)
-    visited = [False]*(n)
-    visited[start] = True
-    while q:
-        now = q.popleft()
-        if now == end:
-            return True
-        for s,e,w in edges:
-            if s==now:
-                if not visited[e]:
-                    visited[e] = True
-                    q.append(e)
-    
-    return False
+            if distance[start] == -INF:
+                continue
+            
+            if distance[end] < distance[start] - cost + moneys[end]:
+                if i < N-1:
+                    distance[end] = distance[start] - cost + moneys[end]
+                else:
+                    distance[end] = INF
 
+    if distance[E] == INF:
+        return "Gee"
 
-isCycle = False
-for i in edges:
-        s,e,w = i
-        if result[s] != -1 * sys.maxsize and result[e] < result[s] + w:
-            if bfs(s,end):
-                isCycle = True
-                break
+    elif distance[E] == -INF:
+        return "gg"
 
-if result[end] == -1 * sys.maxsize:
-    print("gg")
-else:
-    if isCycle:
-        print("Gee")
-    else:
-        print(result[end])
+    else: return distance[E]
+
+print(bellman_ford(S))
