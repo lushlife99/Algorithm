@@ -1,23 +1,21 @@
 from sys import stdin
-import heapq
 
 N, C =  map(int, stdin.readline().split())
 M = int(stdin.readline())
-arr = []
+infos = []
+for _ in range(M):
+    s, r, box = map(int, stdin.readline().split())
+    infos.append((s, r, box))
+infos.sort(key=lambda x :  x[1])
+
 capa = [C]*N
 total = 0
-
-for _ in range(M):
-    s, e, w = map(int, stdin.readline().split())
-    arr.append((e, -w, s))
-
-heapq.heapify(arr)
-for e, w, s in arr:
+for s, r, box in infos:
     _min = C
-    for i in range(s, e):
-        if _min > min(capa[i], -w) :
-            _min = min(capa[i], -w)
-    for i in range(s, e):
+    for i in range(s, r):
+        if _min > min(capa[i], box) :
+            _min = min(capa[i], box)
+    for i in range(s, r):
         capa[i] -= _min
     total += _min
 print(total)
