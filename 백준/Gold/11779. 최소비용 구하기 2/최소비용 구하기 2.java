@@ -36,7 +36,9 @@ public class Main {
     }
 
     public static DistanceInfo dijkstra(int start, int end) {
-        PriorityQueue<DistanceInfo> pq = new PriorityQueue<>();
+        PriorityQueue<DistanceInfo> pq = new PriorityQueue<>((d1, d2) -> {
+            return Integer.compare(d1.distance, d2.distance);
+        });
         int[] distances = new int[N + 1];
         Arrays.fill(distances, Integer.MAX_VALUE);
         distances[start] = 0;
@@ -67,7 +69,7 @@ public class Main {
         return null; // end까지 도달 불가한 경우
     }
 
-    static class DistanceInfo implements Comparable<DistanceInfo> {
+    static class DistanceInfo {
         int distance;
         List<Integer> path;
 
@@ -75,11 +77,7 @@ public class Main {
             this.distance = distance;
             this.path = path;
         }
-
-        @Override
-        public int compareTo(DistanceInfo other) {
-            return Integer.compare(this.distance, other.distance);
-        }
+        
     }
 
     static class Edge {
