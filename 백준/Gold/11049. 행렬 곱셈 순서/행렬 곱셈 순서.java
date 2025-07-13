@@ -4,10 +4,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 /**
- * O A B C
- * A
- * B
- * C
+ * dp[i][j] = dp[i][k] + dp[k+1][j]
  */
 public class Main {
 
@@ -31,18 +28,21 @@ public class Main {
             arr[i] = Integer.parseInt(br.readLine().split(" ")[1]);
         }
 
-        System.out.println(topDown(1, N));
+        bottomUp();
+        System.out.println(dp[1][N]);
     }
 
-    private static int topDown(int a, int b) {
-        if (a==b) return 0;
-        if (dp[a][b] != Integer.MAX_VALUE) return dp[a][b];
-        for (int k = a; k < b; k++) {
-            int value = topDown(a, k) + topDown(k+1, b) +
-                    arr[a-1] * arr[k] * arr[b];
-            dp[a][b] = Math.min(dp[a][b], value);
-        }
+    private static void bottomUp() {
+        for (int len = 1; len < N+1; len++) {
+            for (int i = 1; i + len < N+1; i++) {
+                int j = i + len;
+                dp[i][j] = Integer.MAX_VALUE;
 
-        return dp[a][b];
+                for (int k = i; k < j; k++) {
+                    int cost = dp[i][k] + dp[k+1][j] + arr[i-1] * arr[k] * arr[j];
+                    dp[i][j] = Math.min(dp[i][j], cost);
+                }
+            }
+        }
     }
 }
