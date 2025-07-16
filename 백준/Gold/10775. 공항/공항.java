@@ -43,17 +43,10 @@ public class Main {
     }
 
     static int find(int a) {
-        int root = a;
-        while (parent[root] != root) {
-            root = parent[root];
+        while (a != parent[a]) {
+            parent[a] = parent[parent[a]];
+            a = parent[a];
         }
-        
-        while (a != root) {
-            int next = parent[a];
-            parent[a] = root;
-            a = next;
-        }
-
-        return root;
+        return a;
     }
 }
