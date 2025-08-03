@@ -1,70 +1,69 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Scanner;
+import java.util.StringTokenizer;
 
 /**
  * BOJ 1114 통나무 자르기
- * 
+ *
  * 테스트케이스는 맞았는데, 반례 못찾겠음
  * 결국 접근방법이 아예 틀린거같아서 답지봄
  */
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        String line = sc.nextLine();
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int L = Integer.parseInt(st.nextToken());
+        int K = Integer.parseInt(st.nextToken());
+        int C = Integer.parseInt(st.nextToken());
+        List<Integer> pos = new ArrayList<>();
+        pos.add(0); pos.add(L);
 
-        String[] spt = line.split(" ");
-        Long l = Long.parseLong(spt[0]);
-        int k = Integer.parseInt(spt[1]);
-        int c = Integer.parseInt(spt[2]);
-
-        line = sc.nextLine();
-        spt = line.split(" ");
-        List<Long> pos = new ArrayList<>();
-        pos.add(0L);
-        pos.add(l);
-        for (int i = 0; i < k; i++) {
-            pos.add(Long.parseLong(spt[i]));
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < K; i++) {
+            pos.add(Integer.parseInt(st.nextToken()));
         }
-        pos.sort((a, b) -> (int) (a - b));
-        long left = 0;
-        long right = l;
-        long ansFirst = 0;
-        long ansLongest = l;
-        while (left <= right) {
-            long mid = left + (right - left) / 2;
-            long cutCnt = 0;
-            long firstCut = -1;
-            long diff = 0;
-            for (int i = k; i >= 0; i--) {
-                diff += pos.get(i + 1) - pos.get(i);
-                if (diff > mid) {
-                    diff = pos.get(i + 1) - pos.get(i);
+
+        Collections.sort(pos);
+
+        int left = 0;
+        int right = L;
+        int answerFirstCutPos = 0;
+        int maxCutLength = Integer.MAX_VALUE;
+
+        while (left < right) {
+            int mid = (left + right) / 2;
+            int length = 0;
+            int cutCnt = 0;
+
+            for (int i = K; i >= 0; i--) {
+                length += pos.get(i+1) - pos.get(i);
+                if (length > mid) {
+                    length = pos.get(i+1) - pos.get(i);
                     cutCnt++;
-                    if (diff > mid) {
-                        cutCnt = c + 1;
+                    if (length > mid) {
+                        cutCnt = C+1;
                         break;
                     }
                 }
             }
-            // 첫번째를 자를 수 있는지 확인한다.
-            // 한번이라도 자를 수 있으면 첫번째가 최소 길이가 된다.
-            if (cutCnt < c) {
-                firstCut = pos.get(1);
+
+            if (cutCnt <= C) {
+                int firstCutPos = cutCnt < C ? pos.get(1) : length;
+                
+                answerFirstCutPos = firstCutPos;
+                maxCutLength = Math.min(maxCutLength, mid);
+                right = mid;
             } else {
-                firstCut = diff;
-            }
-            if (cutCnt <= c) {
-                ansLongest = Math.min(mid, ansLongest);
-                ansFirst = firstCut;
-                right = mid - 1;
-            } else {
-                left = mid + 1;
+                left = mid+1;
             }
         }
-        System.out.println(ansLongest + " " + ansFirst);
-        sc.close();
+
+        System.out.printf("%d %d", maxCutLength, answerFirstCutPos);
 
     }
 }
