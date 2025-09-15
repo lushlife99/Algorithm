@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 public class Main {
 
     static int N, Q;
-    static int[] parent;
+    static List<Integer>[] edge;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -20,13 +20,16 @@ public class Main {
 
         N = Integer.parseInt(br.readLine());
 
-        parent = IntStream.rangeClosed(0, N).toArray();
-
+        edge = IntStream.rangeClosed(0, N)
+                .mapToObj(i -> new ArrayList<>())
+                .toArray(List[]::new);
+        
         for (int i = 0; i < N - 1; i++) {
             StringTokenizer st = new StringTokenizer(br.readLine());
             int u = Integer.parseInt(st.nextToken());
             int v = Integer.parseInt(st.nextToken());
-            union(u, v);
+            edge[u].add(v);
+            edge[v].add(u);
         }
 
         Q = Integer.parseInt(br.readLine());
@@ -34,53 +37,50 @@ public class Main {
         for (int i = 0; i < Q; i++) {
             StringTokenizer st = new StringTokenizer(br.readLine());
             int K = Integer.parseInt(st.nextToken());
-            Set<Integer> S = new HashSet<>();
 
+            int[] parent = IntStream.rangeClosed(0, N).toArray();
+
+            Set<Integer> S = new HashSet<>();
             while (st.hasMoreTokens()) {
                 S.add(Integer.parseInt(st.nextToken()));
             }
 
-            List<Integer> sList = new ArrayList<>(S);
-            Map<Integer, Integer> sCntMap = new HashMap<>();
-            for (int j = 0; j < K; j++) {
-                int root = find(sList.get(j), S);
-                sCntMap.put(root, sCntMap.getOrDefault(root, 0) + 1);
+            for (int node : S) {
+                for (int neighbor : edge[node]) {
+                    if (S.contains(neighbor)) {
+                        union(parent, node, neighbor);
+                    }
+                }
             }
 
-            int res = 0;
-
-            for (int key : sCntMap.keySet()) {
-                int cnt = sCntMap.get(key);
-
-                if (cnt == 1) continue;
-
-                res += cnt * (cnt-1) / 2;
+            Map<Integer, Integer> componentSize = new HashMap<>();
+            for (int node : S) {
+                int root = find(parent, node);
+                componentSize.put(root, componentSize.getOrDefault(root, 0) + 1);
             }
-            sb.append(res + "\n");
+
+            long result = 0;
+            for (int size : componentSize.values()) {
+                result += (long) size * (size - 1) / 2;
+            }
+            sb.append(result).append("\n");
         }
 
         System.out.println(sb.toString());
     }
 
-    private static int find(int a) {
-        if (a == parent[a]) return a;
-        return find(parent[a]);
-    }
-
-    private static void union(int a, int b) {
-        if (a > b) {
-            int tmp = a; a = b; b = tmp;
+    private static int find(int[] parent, int a) {
+        if (a == parent[a]) {
+            return a;
         }
-
-        if (parent[b] == b) parent[b] = a;
-        else  parent[a] = b;
+        return parent[a] = find(parent, parent[a]);
     }
 
-    private static int find(int a, Set<Integer> S) {
-        if (a == parent[a]) return a;
-        if (!S.contains(parent[a])) return a;
-
-        return find(parent[a], S);
+    private static void union(int[] parent, int a, int b) {
+        int rootA = find(parent, a);
+        int rootB = find(parent, b);
+        if (rootA != rootB) {
+            parent[rootB] = rootA;
+        }
     }
-
 }
