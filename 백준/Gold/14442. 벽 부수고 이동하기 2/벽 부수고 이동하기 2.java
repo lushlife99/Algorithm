@@ -97,6 +97,11 @@ public class Main {
         queue.add(new Current(0, 0, 0));
         distance[0][0][0] = 1;
 
+        if (N == 1 && M == 1) {
+            System.out.println(1);
+            return;
+        }
+
         while (!queue.isEmpty()) {
             Current current = queue.poll();
 
@@ -112,6 +117,9 @@ public class Main {
 
                         if (!(nx == N - 1 && ny == M - 1)) {
                             queue.offer(new Current(nx, ny, current.cnt));
+                        } else {
+                            System.out.println(distance[current.x][current.y][current.cnt] + 1);
+                            return;
                         }
 
                     }
@@ -123,24 +131,18 @@ public class Main {
 
                         if (!(nx == N - 1 && ny == M - 1)) {
                             queue.offer(new Current(nx, ny, current.cnt + 1));
+                        } else {
+                            System.out.println(distance[current.x][current.y][current.cnt] + 1);
+                            return;
                         }
                     }
                 }
 
-//                System.out.println(nx + " " + ny + " " + distance[nx][ny]);
+//                System.out.println(nx + " " + ny + " " + distance[nx][ny][current.cnt]);
             }
         }
 
-        int answer = Integer.MAX_VALUE;
-        for (int i = 0; i <= K; i++) {
-            answer = Math.min(answer, distance[N-1][M-1][i]);
-        }
-
-        if (answer == Integer.MAX_VALUE) {
-            System.out.println(-1);
-        } else {
-            System.out.println(answer);
-        }
+        System.out.println(-1);
     }
 
 }
