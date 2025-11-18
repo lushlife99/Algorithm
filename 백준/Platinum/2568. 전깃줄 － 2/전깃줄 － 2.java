@@ -11,81 +11,77 @@ import java.util.*;
 public class Main {
 
     static class Pair implements Comparable<Pair> {
-        int a, b;
-        Pair(int a, int b) { this.a = a; this.b = b; }
+        int n1, n2;
+
+        public Pair(int n1, int n2) {
+            this.n1 = n1; this.n2 = n2;
+        }
 
         @Override
         public int compareTo(Pair o) {
-            return this.a - o.a;
+            return this.n1 - o.n1;
         }
     }
 
-    static int N;
-    static List<Pair> pairs = new ArrayList<>();
+    private static int N;
+    private static List<Pair> pairs = new ArrayList<>();
 
-    static int[] dp;
-    static int[] pos;
-    static int[] trace;
+    private static int[] dp;
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
-
         for (int i = 0; i < N; i++) {
             StringTokenizer st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            pairs.add(new Pair(a, b));
+            int n1 = Integer.parseInt(st.nextToken());
+            int n2 = Integer.parseInt(st.nextToken());
+            pairs.add(new Pair(n1, n2));
         }
 
         Collections.sort(pairs);
-
         dp = new int[N];
-        pos = new int[N];
-        trace = new int[N];
-
+        int[] pos = new int[N];
         int LIS = 0;
 
         for (int i = 0; i < N; i++) {
-            int now = pairs.get(i).b;
-
-            int idx = lowerBound(dp, LIS, now);
-
-            dp[idx] = now;
+            int current = pairs.get(i).n2;
+            int idx = binarySearch(LIS, current);
+            dp[idx] = current;
             pos[i] = idx;
-            trace[idx] = i;
-
             if (idx == LIS) LIS++;
         }
 
-        boolean[] isLIS = new boolean[N];
-        int target = LIS - 1;
-
+        System.out.println(N-LIS);
+        boolean[] used = new boolean[N];
+        int target = LIS-1;
         for (int i = N - 1; i >= 0; i--) {
             if (pos[i] == target) {
-                isLIS[i] = true;
+                used[i] = true;
                 target--;
             }
         }
 
-        List<Integer> removed = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+
         for (int i = 0; i < N; i++) {
-            if (!isLIS[i]) removed.add(pairs.get(i).a);
+            if (!used[i]) {
+                sb.append(pairs.get(i).n1 + "\n");
+            }
         }
 
-        Collections.sort(removed);
-
-        System.out.println(removed.size());
-        for (int x : removed) System.out.println(x);
+        System.out.print(sb);
     }
 
-    private static int lowerBound(int[] arr, int end, int target) {
-        int s = 0, e = end;
-        while (s < e) {
-            int m = (s + e) / 2;
-            if (arr[m] < target) s = m + 1;
-            else e = m;
+    private static int binarySearch(int end, int value) {
+        int start = 0;
+        while (start < end) {
+            int mid = (start + end) / 2;
+            if (dp[mid] >= value) {
+                end = mid;
+            } else {
+                start = mid+1;
+            }
         }
-        return s;
+        return start;
     }
 }
