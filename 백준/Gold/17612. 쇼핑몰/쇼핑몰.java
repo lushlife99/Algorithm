@@ -1,67 +1,91 @@
 import java.io.*;
 import java.util.*;
 
+
+/**
+ * boj 17612 쇼핑몰
+ */
+
+/**
+ * 반례
+ * 작업 우선순위 큐에서 가장 빨리 끝나는 노드가 여러개일 경우
+ */
+
 public class Main {
-    static class Person {
+
+    static class Customer {
         int id, w;
-        public Person(int id, int w) { this.id = id; this.w = w; }
-    }
+        int end, nodeId;
 
-    static class ExitLog {
-        Person person;
-        int end, exchangeIdx;
-        public ExitLog(Person person, int end, int exchangeIdx) {
-            this.person = person;
-            this.end = end;
-            this.exchangeIdx = exchangeIdx;
+        public Customer(int id, int w) {
+            this.id = id; this.w = w;
+        }
+
+        @Override
+        public String toString() {
+            return "id : " + this.id + ", end : " + this.end + ", nodeId : " + nodeId;
         }
     }
 
-    static class Exchange {
-        int id, total;
-        public Exchange(int id, int total) {
+    static class Node {
+        int id;
+        int end;
+
+        public Node(int id, int end) {
             this.id = id;
-            this.total = total;
+            this.end = end;
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    private static int N, K;
+    private static List<Customer> customers = new ArrayList<>();
+
+    public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-
-        PriorityQueue<Exchange> exPq = new PriorityQueue<>((a, b) -> {
-            if (a.total != b.total) return Integer.compare(a.total, b.total);
-            return Integer.compare(a.id, b.id);
-        });
-
-        for (int i = 0; i < K; i++) exPq.add(new Exchange(i, 0));
-
-        PriorityQueue<ExitLog> pq = new PriorityQueue<>((a, b) -> {
-            if (a.end != b.end) return Integer.compare(a.end, b.end);
-            return Integer.compare(b.exchangeIdx, a.exchangeIdx); // 큰 번호 우선
-        });
+        N = Integer.parseInt(st.nextToken());
+        K = Integer.parseInt(st.nextToken());
 
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
             int id = Integer.parseInt(st.nextToken());
             int w = Integer.parseInt(st.nextToken());
-
-            Exchange exchange = exPq.poll();
-            exchange.total += w;
-            exPq.add(exchange);
-
-            Person p = new Person(id, w);
-            pq.add(new ExitLog(p, exchange.total, exchange.id));
+            customers.add(new Customer(id, w));
         }
 
-        long answer = 0L;
-        for (int i = 0; !pq.isEmpty(); i++) {
-            ExitLog el = pq.poll();
-            answer += (long)(i + 1) * el.person.id;
+        Queue<Node> queue = new PriorityQueue<>((n1, n2) -> {
+            if (n1.end != n2.end) return n1.end - n2.end;
+            return n1.id - n2.id;
+        });
+
+        for (int i = 1; i <= K; i++) {
+            queue.add(new Node(i, 0));
+        }
+
+        for (int i = 0; i < N; i++) {
+            Customer customer = customers.get(i);
+            Node node = queue.poll();
+            node.end += customer.w;
+            queue.offer(node);
+
+            customer.nodeId = node.id;
+            customer.end = node.end;
+        }
+
+        long answer = 0;
+        Collections.sort(customers, (c1, c2) -> {
+            if (c1.end != c2.end) return c1.end - c2.end;
+
+            return c2.nodeId - c1.nodeId;
+        });
+
+        for (long i = 1; i <= customers.size(); i++) {
+            Customer c = customers.get((int)i-1);
+            answer += (i * c.id);
         }
 
         System.out.println(answer);
     }
+
+
 }
