@@ -1,69 +1,71 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 /**
- * BOJ 1114 통나무 자르기
- *
- * 테스트케이스는 맞았는데, 반례 못찾겠음
- * 결국 접근방법이 아예 틀린거같아서 답지봄
+ * boj 1114 통나무 자르기
+ * 메개 변수 탐색 O(K*logL)
  */
 
+
 public class Main {
-    public static void main(String[] args) throws IOException {
+
+    private static int L, K, C;
+    private static int[] arr;
+
+    public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int L = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-        int C = Integer.parseInt(st.nextToken());
-        List<Integer> pos = new ArrayList<>();
-        pos.add(0); pos.add(L);
+        L = Integer.parseInt(st.nextToken());
+        K = Integer.parseInt(st.nextToken());
+        C = Integer.parseInt(st.nextToken());
 
+        arr = new int[K+2];
+        arr[0] = 0;
+        arr[K+1] = L;
         st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < K; i++) {
-            pos.add(Integer.parseInt(st.nextToken()));
+        for (int i = 1; i <= K; i++) {
+            arr[i] = Integer.parseInt(st.nextToken());
         }
 
-        Collections.sort(pos);
+        Arrays.sort(arr);
+        int start = 0;
+        int end = L;
+        int answerFirstCut = 0;
+        int answer = L;
 
-        int left = 0;
-        int right = L;
-        int answerFirstCutPos = 0;
-        int maxCutLength = Integer.MAX_VALUE;
-
-        while (left < right) {
-            int mid = (left + right) / 2;
-            int length = 0;
-            int cutCnt = 0;
+        while (start <= end) {
+            int mid = (start + end) / 2;
+            int firstCut = 0;
+            int last = L;
+            int cnt = 0;
 
             for (int i = K; i >= 0; i--) {
-                length += pos.get(i+1) - pos.get(i);
-                if (length > mid) {
-                    length = pos.get(i+1) - pos.get(i);
-                    cutCnt++;
-                    if (length > mid) {
-                        cutCnt = C+1;
+                if (last - arr[i] > mid) {
+                    cnt++;
+                    last = arr[i+1];
+                    firstCut = arr[i+1];
+
+                    if (last - arr[i] > mid) { // 불가능
+                        cnt = C+1;
                         break;
                     }
                 }
             }
 
-            if (cutCnt <= C) {
-                int firstCutPos = cutCnt < C ? pos.get(1) : length;
-                
-                answerFirstCutPos = firstCutPos;
-                maxCutLength = Math.min(maxCutLength, mid);
-                right = mid;
+            if (cnt > C) { // 불가능
+                start = mid+1;
             } else {
-                left = mid+1;
+                if (cnt < C) {
+                    firstCut = arr[1];
+                }
+                end = mid-1;
+                if (answer > mid) {
+                    answerFirstCut = firstCut;
+                    answer = mid;
+                }
             }
         }
 
-        System.out.printf("%d %d", maxCutLength, answerFirstCutPos);
-
+        System.out.println(answer + " " + answerFirstCut);
     }
 }
