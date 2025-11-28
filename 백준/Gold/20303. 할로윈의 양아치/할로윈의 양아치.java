@@ -22,7 +22,6 @@ public class Main {
     private static int N, M, K;
     private static long[] candy;
     private static int[] cnt;
-    private static List<Integer>[] edges;
     private static int[] parent;
 
     public static void main(String[] args) throws Exception {
@@ -42,11 +41,6 @@ public class Main {
             parent[i] = i;
             cnt[i] = 1;
         }
-
-        edges = IntStream.rangeClosed(0, N)
-                .mapToObj(i -> new ArrayList<>())
-                .toArray(List[]::new);
-
 
         for (int i = 0; i < M; i++) {
             st = new StringTokenizer(br.readLine());
