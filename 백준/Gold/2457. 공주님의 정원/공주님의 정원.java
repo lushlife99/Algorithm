@@ -1,141 +1,104 @@
 import java.io.*;
 import java.util.*;
 
-
 /**
  * boj 2457 공주님의 정원
- * 그리디
- *
- * 개화 시기로, 폐화시기로 정렬
+ * 정렬, 우선순위 큐
  */
-
-/**
- * 반례
- * 1. 경계값
- */
-
-//3
-//1 1 5 31
-//1 1 11 30
-//11 30 12 30
 
 public class Main {
 
-    static class Flower implements Comparable<Flower>{
-        Date start;
-        Date end;
-
-        public Flower(Date start, Date end) {
-            this.start = start; this.end = end;
-        }
-
-        @Override
-        public int compareTo(Flower o) {
-            if (this.start.month != o.start.month) {
-                return this.start.month - o.start.month;
-            } else if (this.start.day != o.start.day) {
-                return this.start.day - o.start.day;
-            }
-
-            if (this.end.month != o.end.month) {
-                return o.end.month - this.end.month;
-            }
-
-            return o.end.day - this.end.day;
-        }
-    }
-
-    static class Date implements Comparable<Date> {
-        int month;
-        int day;
-
-        public Date(int month, int day) {
-            this.month = month; this.day = day;
-        }
-
-        @Override
-        public int compareTo(Date o) {
-            if (this.month != o.month) {
-                return this.month - o.month;
-            }
-
-            return this.day - o.day;
-        }
-
-        @Override
-        public String toString() {
-            return "month : " + this.month + ", day : " + day;
-        }
-    }
-
-    private static int N;
-    private static List<Flower> flowers = new ArrayList<>();
+    static int N;
+    static List<int[]> flowers = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
-
+        StringTokenizer st;
         for (int i = 0; i < N; i++) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            int sM = Integer.parseInt(st.nextToken());
-            int sD = Integer.parseInt(st.nextToken());
-            int eM = Integer.parseInt(st.nextToken());
-            int eD = Integer.parseInt(st.nextToken());
+            st = new StringTokenizer(br.readLine());
+            int sm = Integer.parseInt(st.nextToken());
+            int sd = Integer.parseInt(st.nextToken());
+            int em = Integer.parseInt(st.nextToken());
+            int ed = Integer.parseInt(st.nextToken());
 
-            Date start = new Date(sM, sD);
-            Date end = new Date(eM, eD);
+            if (sm > 11) continue;
+            if (em < 3) continue;
 
-            flowers.add(new Flower(start, end));
+            if (sm < 3) {
+                sm = 3;
+                sd = 1;
+            }
+
+            if (em > 11) {
+                em = 12;
+                ed = 1;
+            }
+
+            flowers.add(new int[]{sm, sd, em, ed});
         }
 
-        Collections.sort(flowers);
-        Date current = new Date(3, 1);
-        Date e = new Date(11, 30);
+        Collections.sort(flowers, (f1, f2) -> {
+            if (f1[0] == f2[0] && f1[1] == f2[1]) {
+                if (f1[2] != f2[2]) return f2[2] - f1[2];
+                return f2[3] - f1[3];
+            }
 
-        int cnt = 0;
-        Queue<Flower> queue = new PriorityQueue<>((f1, f2) -> {
-            return f2.end.compareTo(f1.end);
+            if (f1[0] != f2[0]) return f1[0] - f2[0];
+            return f1[1] - f2[1];
         });
 
-        for (Flower f : flowers) {
+        int cm = 3;
+        int cd = 1;
+        int answer = 0;
 
-            if (current.compareTo(f.end) > 0)  continue;
+        Queue<int[]> pq = new PriorityQueue<>((f1, f2) -> {
+            if (f1[2] != f2[2]) return f2[2] - f1[2];
+            return f2[3] - f1[3];
+        });
 
-            if (current.compareTo(f.start) < 0) { // current f.s
-                if (queue.isEmpty()) {
-                    System.out.println(0);
-                    return;
-                } else {
-                    Flower latest = queue.poll();
-                    cnt++;
-                    current = latest.end;
+        for (int i = 0; i < flowers.size(); i++) {
+            int[] flower = flowers.get(i);
 
-                    if (current.compareTo(e) > 0) {
-                        break;
-                    }
-
-                    if (current.compareTo(f.start) < 0) {
-                        System.out.println(0);
-                        return;
-                    }
-                    queue.clear();
-                }
+            if (flower[2] < cm || (flower[2] == cm && flower[3] < cd)) {
+                continue;
             }
 
-            queue.offer(f);
+            if (flower[0] < cm || (flower[0] == cm && flower[1] <= cd)) {
+                pq.add(flower);
+                continue;
+            }
+
+            if (pq.isEmpty()) {
+                break;
+            }
+
+            int[] selectFlower = pq.poll();
+            cm = selectFlower[2];
+            cd = selectFlower[3];
+            answer++;
+
+
+            if (flower[0] < cm || (flower[0] == cm && flower[1] <= cd)) {
+                pq.add(flower);
+            }
+
         }
 
-        if (!queue.isEmpty() && current.compareTo(e) <= 0) {
-            Flower f = queue.poll();
-            if (f.end.compareTo(e) <= 0) {
-                System.out.println(0);
+        if (cm == 12 && cd == 1) {
+            System.out.println(answer);
+            return;
+        }
+
+        if (!pq.isEmpty()) {
+            int[] flower = pq.poll();
+            if (flower[2] == 12 && flower[3] == 1) {
+                System.out.println(answer+1);
                 return;
             }
-            cnt++;
         }
 
-        System.out.println(cnt);
+        System.out.println(0);
     }
 }
-
 
