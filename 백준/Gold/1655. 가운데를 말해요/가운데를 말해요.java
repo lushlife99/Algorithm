@@ -3,31 +3,39 @@ import java.util.*;
 
 /**
  * boj 1655 가운데를 말해요
+ * 우선순위 큐
  */
 
+
 public class Main {
-    public static void main(String[] args) throws IOException{
+
+    static int N;
+
+    public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        N = Integer.parseInt(br.readLine());
+        Queue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
+        Queue<Integer> minHeap = new PriorityQueue<>();
         StringBuilder sb = new StringBuilder();
-        int n = Integer.parseInt(br.readLine());
-
-        Queue<Integer> maxHeap = new PriorityQueue<>((o1,o2) -> o2-o1);
-        Queue<Integer> minHeap = new PriorityQueue<>((o1,o2) -> o1-o2);
-
-        for(int i=0; i<n; i++) {
-            int num = Integer.parseInt(br.readLine());
-            if(maxHeap.size() == minHeap.size()) maxHeap.add(num);
-            else minHeap.add(num);
-
-            if(!maxHeap.isEmpty() && !minHeap.isEmpty()) {
-                if(maxHeap.peek() > minHeap.peek()) {
-                    int tmp = maxHeap.poll();
-                    maxHeap.offer(minHeap.poll());
-                    minHeap.offer(tmp);
-                }
+        for (int i = 0; i < N; i++) {
+            int val = Integer.parseInt(br.readLine());
+            if (i % 2 == 0) {
+                maxHeap.add(val);
+            } else {
+                minHeap.add(val);
             }
+
+            while (!minHeap.isEmpty() && !maxHeap.isEmpty() && maxHeap.peek() > minHeap.peek()) {
+                int max = maxHeap.poll();
+                int min = minHeap.poll();
+
+                maxHeap.add(min);
+                minHeap.add(max);
+            }
+
             sb.append(maxHeap.peek()).append("\n");
         }
-        System.out.println(sb.toString());
+
+        System.out.print(sb);
     }
 }
