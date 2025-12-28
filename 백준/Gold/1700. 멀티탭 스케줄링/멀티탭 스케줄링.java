@@ -1,53 +1,87 @@
 import java.io.*;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
- * boj 1700
+ * boj 1700 멀티탭 스케줄링
  * 그리디
+ *
+ * 가장 나중에 사용하는 플러그 빼기
  */
 
+
 public class Main {
+
+    static class Node {
+        int id;
+        int idx;
+        List<Integer> schedules;
+
+        Node (int id, int idx) {
+            this.id = id;
+            this.idx = idx;
+            schedules = new ArrayList<>();
+        }
+
+        int getNewestUsedTime(int time) {
+            for (; idx < schedules.size(); idx++) {
+                if (schedules.get(idx) <= time) continue;
+                return schedules.get(idx);
+            }
+
+            return 1000;
+        }
+    }
+
+    static int N, K;
+    static Set<Integer> multiTap = new HashSet<>();
+    static Node[] nodes;
+    static int[] schedule;
+
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int N = Integer.parseInt(st.nextToken());
-        int K = Integer.parseInt(st.nextToken());
-
-        int[] order = new int[K];
+        N = Integer.parseInt(st.nextToken());
+        K = Integer.parseInt(st.nextToken());
         st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < K; i++) order[i] = Integer.parseInt(st.nextToken());
+        schedule = new int[K];
+        nodes = new Node[K+1];
 
-        boolean[] use = new boolean[101];
-        int put = 0, ans = 0;
+        for (int i = 1; i <= K; i++) {
+            nodes[i] = new Node(i, 0);
+        }
 
         for (int i = 0; i < K; i++) {
-            int temp = order[i];
-            if (!use[temp]) {
-                if (put < N) {
-                    use[temp] = true;
-                    put++;
-                } else {
-                    ArrayList<Integer> arrList = new ArrayList<>();
-                    for (int j = i; j < K; j++) {
-                        if (use[order[j]] && !arrList.contains(order[j])) arrList.add(order[j]);
-                    }
-                    if (arrList.size() != N) {
-                        for (int j = 0; j < use.length; j++) {
-                            if (use[j] && !arrList.contains(j)) {
-                                use[j] = false;
-                                break;
-                            }
-                        }
-                    } else {
-                        int remove = arrList.get(arrList.size() - 1);
-                        use[remove] = false;
-                    }
-                    use[temp] = true;
-                    ans++;
+            schedule[i] = Integer.parseInt(st.nextToken());
+            nodes[schedule[i]].schedules.add(i);
+        }
+
+        int answer = 0;
+
+        for (int i = 0; i < K; i++) {
+            int node = schedule[i];
+
+            if (multiTap.contains(node)) continue;
+            if (multiTap.size() < N) {
+                multiTap.add(node);
+                continue;
+            }
+
+            int maxTime = 0;
+            int maxNodeIdx = 0;
+            for (int nodeIdx : multiTap) {
+                if (maxTime < nodes[nodeIdx].getNewestUsedTime(i)) {
+                    maxTime = nodes[nodeIdx].getNewestUsedTime(i);
+                    maxNodeIdx = nodeIdx;
                 }
             }
+
+            multiTap.remove(maxNodeIdx);
+            multiTap.add(node);
+            answer++;
         }
-        System.out.println(ans);
+
+        System.out.println(answer);
     }
 }
