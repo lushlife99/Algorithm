@@ -1,15 +1,8 @@
 import java.io.*;
-import java.math.BigInteger;
-import java.util.*;
 
 /**
  * boj 1029 그림 교환
  * dp, 비트마스크
- *
- * 1. 방문 노드
- * 2. 현재 가격
- * 3. 현재 노드
- * dp[1][2][3] =
  */
 
 
@@ -22,7 +15,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
-
         costs = new int[N][N];
         for (int i = 0; i < N; i++) {
             String s = br.readLine();
@@ -31,20 +23,16 @@ public class Main {
             }
         }
 
-        dp = new boolean[1<<N][10][N];
+        dp = new boolean[1<<N][N][10];
 
-        bfs();
+        dfs(1,0,0);
         int answer = 0;
-        for (int i = 0; i < dp.length; i++) {
-            for (int j = 0; j < 10; j++) {
-                for (int k = 0; k < N; k++) {
-                    if (dp[i][j][k]) {
-                        int cnt = 0;
-                        for (int l = 0; l < N; l++) {
-                            if (((1<<l) & i) != 0) cnt++;
-                        }
 
-                        answer = Math.max(answer, cnt);
+        for (int mask = 0; mask < 1 << N; mask++) {
+            for (int node = 0; node < N; node++) {
+                for (int cost = 0; cost < 10; cost++) {
+                    if (dp[mask][node][cost]) {
+                        answer = Math.max(answer, Integer.bitCount(mask));
                     }
                 }
             }
@@ -53,27 +41,13 @@ public class Main {
         System.out.println(answer);
     }
 
-    static void bfs() {
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[]{1,0,0});
-        dp[1][0][0] = true;
-
-        while (!queue.isEmpty()) {
-            int[] c = queue.poll();
-            int mask = c[0];
-            int curCost = c[1];
-            int curNode = c[2];
-
-            for (int i = 0; i < N; i++) {
-                if (curCost <= costs[curNode][i]
-                    && (mask & (1<<i)) == 0) {
-                    if (!dp[mask|(1<<i)][costs[curNode][i]][i]) {
-                        dp[mask | (1 << i)][costs[curNode][i]][i] = true;
-                        queue.add(new int[]{mask | (1 << i), costs[curNode][i], i});
-                    }
-                }
+    static void dfs(int mask, int current, int cost) {
+        if (dp[mask][current][cost]) return;
+        dp[mask][current][cost] = true;
+        for (int next = 0; next < N; next++) {
+            if (costs[current][next] >= cost && (mask & 1 << next) == 0) {
+                dfs(mask | (1 << next), next, costs[current][next]);
             }
         }
     }
-
 }
