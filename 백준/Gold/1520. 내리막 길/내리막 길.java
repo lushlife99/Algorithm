@@ -1,63 +1,52 @@
 import java.io.*;
+import java.util.*;
 
 /**
- * BOJ 1520
- *
- * dp[N][M] = 상 + 하 + 좌 + 우
- *
- * 우,하 먼저 갱신
- * 좌,상 갱신. 이 때 업데이트가 발생하면 그래프를 순회해서 더해진 값만큼 업데이트
+ * boj 1520 내리막 길
  */
+
 
 public class Main {
 
-    static int N;
-    static int M;
-    static int[] dx = {1, -1 ,0, 0};
-    static int[] dy = {0, 0, 1, -1};
-    static int[][] arr;
+    static int M, N;
+    static int[][] maze;
     static int[][] dp;
+    static int[][] directions = {{1,0},{-1,0},{0,1},{0,-1}};
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String[] split = br.readLine().split(" ");
-        N = Integer.parseInt(split[0]);
-        M = Integer.parseInt(split[1]);
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        M = Integer.parseInt(st.nextToken());
+        N = Integer.parseInt(st.nextToken());
+        maze = new int[M][N];
+        dp = new int[M][N];
+        for (int[] row : dp) Arrays.fill(row, -1);
 
-        arr = new int[N][M];
-        dp = new int[N][M];
-
-        for (int i = 0; i < N; i++) {
-            split = br.readLine().split(" ");
-            for (int j = 0; j < M; j++) {
-                arr[i][j] = Integer.parseInt(split[j]);
-                dp[i][j] = -1;
+        for (int i = 0; i < M; i++) {
+            st = new StringTokenizer(br.readLine());
+            for (int j = 0; j < N; j++) {
+                maze[i][j] = Integer.parseInt(st.nextToken());
             }
         }
 
-        System.out.println(dfs(0, 0));
+        System.out.println(dfs(0,0));
     }
 
-    private static int dfs(int x, int y) {
-        if (x == N - 1 && y == M - 1) return 1;
-
+    static int dfs(int x, int y) {
         if (dp[x][y] != -1) return dp[x][y];
+        if (x == M-1 && y == N-1) return 1;
 
-        dp[x][y] = 0;
+        int res = 0;
+        for (int i = 0; i < directions.length; i++) {
+            int nx = x + directions[i][0];
+            int ny = y + directions[i][1];
 
-        for (int i = 0; i < 4; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-
-            if (nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
-            if (arr[x][y] > arr[nx][ny]) {
-                dp[x][y] += dfs(nx, ny);
-            }
+            if (nx < 0 || ny < 0 || nx == M || ny == N) continue;
+            if (maze[x][y] <= maze[nx][ny]) continue;
+            res += dfs(nx, ny);
         }
 
-        return dp[x][y];
+        return dp[x][y] = res;
     }
-
-
 
 }
