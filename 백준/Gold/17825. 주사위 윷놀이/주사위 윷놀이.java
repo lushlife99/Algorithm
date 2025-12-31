@@ -1,114 +1,169 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
-
+import java.util.stream.IntStream;
 
 /**
  * boj 17825 주사위 윷놀이
+ * 시뮬, 구현
  */
 
+
 public class Main {
-    static int [] map = {
-            0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 0, //0 ~ 21
-            10, 13, 16, 19, 25, 30, 35, 40, 0,  //22 ~ 30
-            20, 22, 24, 25, 30, 35, 40, 0,      //31 ~ 38
-            30, 28, 27, 26, 25, 30, 35, 40, 0}; //39 ~ 47
+
+    static class Node {
+        int value;
+        Node blue;
+        Node red;
+        boolean used;
+
+        Node(int value) {
+            this.value = value;
+            this.used = false;
+        }
+    }
+
     static int[] dice = new int[10];
-    static int[] gamePiece = new int[10];
-    static int ans = 0;
-    public static void main(String[] args) throws Exception {
+    static Node root;
+    static Node[] horses = new Node[4];
+    static int answer = 0;
+
+    public static void main(String[] args) throws NumberFormatException, IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
-
-        for(int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             dice[i] = Integer.parseInt(st.nextToken());
         }
 
-        permutation(0);
-        System.out.println(ans);
-    }
+        root = initBoard();
 
-    public static void permutation(int cnt) {
-        if(cnt == 10) {
-            playGame();
-            return;
+        for (int i = 0; i < 4; i++) {
+            horses[i] = root;
+            root.used = true;
         }
 
-        for(int i=0; i<4; i++) {
-            gamePiece[cnt] = i;
-            permutation(cnt+1);
-        }
+        dfs(0, 0);
+        System.out.println(answer);
     }
 
-    public static void playGame() {
-        boolean[] visited = new boolean[map.length];
-        int score = 0;
-        int[] p = new int[4];
+    static int dfs(int depth, int score) {
+        if (depth == 10) {
+            answer = Math.max(answer, score);
+            return score;
+        }
 
-        for(int i=0 ; i<10 ; i++) {
-            int nowDice = dice[i];
-            int nowPiece = gamePiece[i];
-            if(isFinish(p[nowPiece])) return;
+        for (int i = 0; i < 4; i++) {
+            Node cur = horses[i];
+            if (cur == null) continue;
 
-            int next = nextPoint(p[nowPiece], nowDice);
-            if(isFinish(next)) {
-                setVisited(visited, p[nowPiece], false);
-                p[nowPiece] = next;
-                continue;
+            Node next = move(cur, dice[depth]);
+            if (next != null && next.used) continue;
+
+            horses[i] = next;
+            cur.used = false;
+            if (next != null) next.used = true;
+
+            dfs(depth + 1, score + (next == null ? 0 : next.value));
+
+            horses[i] = cur;
+            cur.used = true;
+            if (next != null) next.used = false;
+        }
+        return score;
+    }
+
+    static Node move(Node start, int cnt) {
+        Node cur = start;
+
+        if (cur.blue != null) {
+            cur = cur.blue;
+            cnt--;
+        } else {
+            cur = cur.red;
+            cnt--;
+        }
+
+        while (cnt > 0 && cur != null) {
+            cur = cur.red;
+            cnt--;
+        }
+
+        return cur;
+    }
+    static Node initBoard() {
+        Node root = new Node(0);
+
+        // 2 to 40
+        Node prev = root;
+        Node n10 = null;
+        Node n20 = null;
+        Node n30 = null;
+        Node n40 = null;
+
+        for (int v = 2; v <= 40; v+=2) {
+            Node n = new Node(v);
+            prev.red = n;
+            prev = n;
+            if (v == 10) {
+                n10 = n;
+            } else if (v == 20) {
+                n20 = n;
+            } else if (v == 30) {
+                n30 = n;
+            } else if (v == 40) {
+                n40 = n;
             }
-            if(visited[next]) return;
-            setVisited(visited, p[nowPiece], false);
-            setVisited(visited, next, true);
-
-            p[nowPiece] = next;
-            score += map[p[nowPiece]];
-        }
-        ans = Math.max(ans, score);
-    }
-
-
-    public static void setVisited(boolean[] visited, int idx, boolean check) {
-        if(idx == 20 || idx == 29 || idx == 37 || idx == 46) {
-            visited[20] = check;
-            visited[29] = check;
-            visited[37] = check;
-            visited[46] = check;
-        } else if(idx == 26 || idx == 34 || idx == 43) {
-            visited[26] = check;
-            visited[34] = check;
-            visited[43] = check;
-        } else if(idx == 27 || idx == 35 || idx == 44) {
-            visited[27] = check;
-            visited[35] = check;
-            visited[44] = check;
-        }else if(idx == 28 || idx == 36 || idx == 45) {
-            visited[28] = check;
-            visited[36] = check;
-            visited[45] = check;
-        }else {
-            visited[idx] = check;
-        }
-    }
-
-    public static int nextPoint(int nowIdx, int dice) {
-        int nextIdx = nowIdx + dice;
-
-        if(nowIdx < 21) {
-            if(nextIdx >= 21) nextIdx = 21;
-        } else if(nowIdx < 30) {
-            if(nextIdx >= 30) nextIdx = 30;
-        } else if(nowIdx < 38) {
-            if(nextIdx >= 38) nextIdx = 38;
-        } else if(nowIdx < 47) {
-            if(nextIdx >= 47) nextIdx = 47;
         }
 
-        if(nextIdx == 5) return 22;
-        if(nextIdx == 10) return 31;
-        if(nextIdx == 15) return 39;
-        return nextIdx;
-    }
+        Node end = new Node(0);
+        prev.red = end;
 
-    public static boolean isFinish(int idx) {
-        return idx == 21 || idx == 30 || idx == 38 || idx == 47;
+        // 10 to 25
+        Node n13 = new Node(13);
+        n10.blue = n13;
+
+        Node n16 = new Node(16);
+        n13.red = n16;
+
+        Node n19 = new Node(19);
+        n16.red = n19;
+
+        Node n25 = new Node(25);
+        n19.red = n25;
+
+        // 20 to 25
+
+        Node n22 = new Node(22);
+        n20.blue = n22;
+
+        Node n24 = new Node(24);
+        n22.red = n24;
+
+        n24.red = n25;
+
+        //30 to 25
+
+        Node n28 = new Node(28);
+        n30.blue = n28;
+
+        Node n27 = new Node(27);
+        n28.red = n27;
+
+        Node n26 = new Node(26);
+        n27.red = n26;
+
+        n26.red = n25;
+
+        // 25 to 40
+        Node n30_2 = new Node(30);
+        n25.red = n30_2;
+
+        Node n35 = new Node(35);
+        n30_2.red = n35;
+
+        n35.red = n40;
+
+        return root;
     }
 }
